@@ -4,7 +4,6 @@ from telebot import types
 import logging 
 from calculate_calories import calculate_calories
 
-
 # importing os module for environment variables
 import os
 import sys 
@@ -28,32 +27,14 @@ bot = telebot.TeleBot(TOKEN)
 user_data = {}
 
 
-class BotLogger:
-    def __init__(self, log_file):
-        self.logger = logging.getLogger("bot_logger")
-        self.logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-    
-    def log(self, level, message):
-        if level == 'info':
-            self.logger.info(message)
-        elif level == 'error':
-            self.logger.error(message)
-        elif level == 'debug':
-            self.logger.debug(message)
+@bot.message_handler(commands=["start"])
+def start(message):
 
-
-logger = BotLogger('bot.log')
-
-@bot.message_handler(commands=['start'])
-def handle_start(message):
-    # Обработка команды /start
-    user_id = message.from_user.id
-    logger.log_info(f"Пользователь {user_id} запустил бота с командой /start")
-    bot.send_message(message.chat.id, "Добро пожаловать в нашего бота!")
+    #Стартовая команда
+    user_id = message.chat.id
+    user_data[user_id] = {}
+    bot.send_message(message.chat.id, "Привет! Я помогу вам рассчитать рацион питания.")
+    ask_gender(message)
 
 
 def ask_gender(message):
@@ -63,9 +44,6 @@ def ask_gender(message):
     item2 = types.KeyboardButton("Женский")
     markup.add(item1, item2)
     bot.send_message(message.chat.id, "Пожалуйста, выберите ваш пол:", reply_markup=markup)
-    
-    user_id = message.from_user.id
-    logger.log_info(f"Пользователь {user_id} выбрал кнопку {'/Мужской' if user_id else '/Женский'}")
 
 
 @bot.message_handler(func=lambda message: message.text in ["Мужской", "Женский"])
