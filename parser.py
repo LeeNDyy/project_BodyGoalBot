@@ -22,14 +22,15 @@ class Parser:
     def __init__(self):
         self.headers = {
             "Content-Type": "application/json",
-            "x-app-id": APP_ID,  # Замените на ваш ID приложения
-            "x-app-key": APP_KEY,  # Замените на ваш ключ API
+            "x-app-id": APP_ID,  
+            "x-app-key": APP_KEY,  
         }
 
     def get_nutrition(self, query):
-        #Получает информацию о питательных веществах для продукта.
-        #:param query: Запрос пользователя, например, '3 яйца'.
-        #:return: Словарь с данными о калориях, белках, жирах и углеводах.
+        """Получает информацию о питательных веществах для продукта.
+        :param query: Запрос пользователя, например, '3 яйца'.
+        :return: Словарь с данными о калориях, белках, жирах и углеводах.
+        """
         
         data = json.dumps({"query": query}).encode("utf-8")
         request = urllib.request.Request(self.BASE_URL, data=data, headers=self.headers)
@@ -52,15 +53,3 @@ class Parser:
                     raise ValueError("Продукт не найден")
         except Exception as e:
             raise RuntimeError(f"Ошибка при парсинге данных: {e}")
-
-# if __name__ == "__main__":
-#     parser = NutritionParser()
-#     try:
-#         result = parser.get_nutrition()
-#         print(f"Продукт: {result['name']}")
-#         print(f"Калории: {result['calories']} ккал")
-#         print(f"Белки: {result['protein']} г")
-#         print(f"Жиры: {result['fat']} г")
-#         print(f"Углеводы: {result['carbs']} г")
-#     except Exception as e:
-#         print(f"Ошибка: {e}")
