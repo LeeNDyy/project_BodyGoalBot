@@ -4,7 +4,7 @@ from telebot import types
 # importing os module for environment variables
 import os
 from calculate_calories import calculate_calories
-from parser import Parser
+from bd import DishDatabase
 
 import sys 
 sys.stdout.reconfigure(encoding='utf-8')
@@ -191,37 +191,31 @@ def handle_action_choice(message):
     elif message.text == "Вернуться назад":
         ask_goal(message)  # Возврат к выбору цели
 
-@bot.message_handler(func=lambda message: True)  # Ловим любые текстовые сообщения
+# Инициализация базы данных
+dish_db = DishDatabase("bot/dishes.csv")
+
+@bot.message_handler(func=lambda message: True)
 def handle_food_query(message):
     """Обрабатывает запросы пользователя о блюде."""
     user_id = message.chat.id
     dish_query = message.text
 
-    # Создаем объект парсера
-    parser =Parser()
-
-    # Поиск блюда
-    search_result = parser.search_dish(dish_query)
-    if "error" in search_result:
-        bot.send_message(user_id, search_result["error"])
-        return
-
-    dish_url = search_result["url"]
-
-    # Получение информации о БЖУ
-    nutrition_result = parser.get_nutrition(dish_url)
-    if "error" in nutrition_result:
-        bot.send_message(user_id, nutrition_result["error"])
+    # Поиск блюда в локальной базе
+    dish_info = dish_db.search_dish(dish_query)
+    if not dish_info:
+        bot.send_message(user_id, "Такого блюда нет в списке. Попробуйте уточнить запрос.")
         return
 
     # Отправка информации о БЖУ пользователю
     bot.send_message(
         user_id,
         f"Информация о блюде '{dish_query}':\n"
-        f"- Калорийность: {nutrition_result['calories']} ккал\n"
-        f"- Белки: {nutrition_result['protein']} г\n"
-        f"- Жиры: {nutrition_result['fat']} г\n"
-        f"- Углеводы: {nutrition_result['carbs']} г"
+        f"- Калорийность: {dish_info['calories']} ккал\n"
+        f"- Белки: {dish_info['protein']} г\n"
+        f"- Жиры: {dish_info['fat']} г\n"
+        f"- Углеводы: {dish_info['carbs']} г"
     )
+    
+
 
 bot.polling(non_stop=True)
