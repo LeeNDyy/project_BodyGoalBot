@@ -185,7 +185,7 @@ def handle_action_choice(message):
     if message.text == "Ввести еду":
         bot.send_message(
             message.chat.id,
-            "Введите продукт и количество, которое вы съели (например: '3 яйца')."
+            "Введите блюдо, которое вы съели (например: 'борщ')."
         )
         bot.register_next_step_handler(message, handle_food_query)  # Переход к обработке продукта
     elif message.text == "Вернуться назад":
@@ -223,7 +223,5 @@ def handle_food_query(message):
         f"- Жиры: {nutrition_result['fat']} г\n"
         f"- Углеводы: {nutrition_result['carbs']} г"
     )
-
-
 
 bot.polling(non_stop=True)
