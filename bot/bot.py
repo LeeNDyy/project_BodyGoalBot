@@ -6,6 +6,7 @@ import os
 from calculate_calories import calculate_calories
 from bd import DishDatabase
 
+
 import sys 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -25,6 +26,33 @@ bot = telebot.TeleBot(TOKEN)
 user_data = {}
 
 
+class MessagePrinter:
+    """Базовый класс для вывода сообщений."""
+    def __init__(self, message):
+        self.message = message
+
+    def print_message(self):
+        print(f"{self.message}")
+
+
+class UserWelcomePrinter(MessagePrinter):
+    """Класс для приветствия пользователя, наследует MessagePrinter."""
+    def __init__(self, user_name):
+        super().__init__(f"Добро пожаловать, {user_name}!")
+        self.user_name = user_name
+
+
+class BotFarewellPrinter(MessagePrinter):
+    """Класс для прощания, наследует MessagePrinter."""
+    def __init__(self):
+        super().__init__("Спасибо за использование бота!")
+
+    def farewell(self):
+        """Выводит прощальное сообщение."""
+        return "До новых встреч!"
+
+
+
 @bot.message_handler(commands=["start"])
 def start(message):
     #Стартовая команда
@@ -35,22 +63,28 @@ def start(message):
 
 
 def ask_gender(message):
+    
     #Запрашивает пол пользователя
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     item1 = types.KeyboardButton("Мужской")
     item2 = types.KeyboardButton("Женский")
     markup.add(item1, item2)
+    
     bot.send_message(message.chat.id, "Пожалуйста, выберите ваш пол:", reply_markup=markup)
 
 
 @bot.message_handler(func=lambda message: message.text in ["Мужской", "Женский"])
 def handle_gender(message):
+
     #Обрабатывает выбор пола
     user_id = message.chat.id
     gender = message.text
     user_data[user_id]["gender"] = gender
+
     bot.send_message(message.chat.id, f"Вы выбрали: {gender}")
     bot.send_message(message.chat.id, "Введите ваш вес (кг):")
+    
+    
     bot.register_next_step_handler(message, handle_weight)
 
 def handle_weight(message):
@@ -59,23 +93,28 @@ def handle_weight(message):
         weight = float(message.text)
         user_id = message.chat.id
         user_data[user_id]["weight"] = weight
+
         bot.send_message(message.chat.id, "Введите ваш рост (см):")
+        
         bot.register_next_step_handler(message, handle_height)
     except ValueError:
-        bot.send_message(message.chat.id, "Пожалуйста, введите корректный вес (число).")
+        bot.send_message(message.chat.id, "Пожалуйста, введите корректный рост(число).")
         bot.register_next_step_handler(message, handle_weight)
 
 
 def handle_height(message):
+
     #Обрабатывает ввод роста
     try:
         height = float(message.text)
         user_id = message.chat.id
         user_data[user_id]["height"] = height
         bot.send_message(message.chat.id, "Введите ваш возраст:")
+
         bot.register_next_step_handler(message, handle_age)
     except ValueError:
-        bot.send_message(message.chat.id, "Пожалуйста, введите корректный рост (число).")
+        bot.send_message(message.chat.id, "Пожалуйста, введите корректный возраст (число).")
+ 
         bot.register_next_step_handler(message, handle_height)
 
 def calculate_bmi(weight, height):
@@ -174,20 +213,22 @@ def show_action_menu(message):
     item1 = types.KeyboardButton("Ввести еду ")
     item2 = types.KeyboardButton("Вернуться назад ")
     markup.add(item1, item2)
-    bot.send_message(user_id, "Что вы хотите сделать?", reply_markup=markup)
+    bot.send_message(user_id, "Давайте продолжим", reply_markup=markup)
 
 
 
 
 @bot.message_handler(func=lambda message: message.text in ["Ввести еду", "Вернуться назад"])
 def handle_action_choice(message):
+
     #Обрабатывает выбор действия из меню.
     if message.text == "Ввести еду":
         bot.send_message(
             message.chat.id,
-            "Введите блюдо, которое вы съели (например: 'борщ')."
+            "Введите блюдо, которое вы съели (например: 'Классический борщ')."
         )
         bot.register_next_step_handler(message, handle_food_query)  # Переход к обработке продукта
+
     elif message.text == "Вернуться назад":
         ask_goal(message)  # Возврат к выбору цели
 
@@ -215,7 +256,15 @@ def handle_food_query(message):
         f"- Жиры: {dish_info['fat']} г\n"
         f"- Углеводы: {dish_info['carbs']} г"
     )
-    
 
+if __name__ == "__main__":
+    # Пример использования приветственного класса
+    user_printer = UserWelcomePrinter('Друг')
+    user_printer.print_message()  # Печатает: Сообщение: Добро пожаловать, Алексей!
+
+    # Пример использования класса для прощания
+    bot_printer = BotFarewellPrinter()
+    bot_printer.print_message()  # Печатает: Сообщение: Спасибо за использование бота!
+    print(bot_printer.farewell())  # Печатает: До новых встреч!
 
 bot.polling(non_stop=True)
