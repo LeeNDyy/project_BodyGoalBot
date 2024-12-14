@@ -1,7 +1,5 @@
-import requests
 import telebot
 from telebot import types
-# importing os module for environment variables
 import os
 from calculate_calories import calculate_calories
 from bd import DishDatabase
@@ -27,7 +25,6 @@ user_data = {}
 
 
 class MessagePrinter:
-    """Базовый класс для вывода сообщений."""
     def __init__(self, message):
         self.message = message
 
@@ -36,20 +33,14 @@ class MessagePrinter:
 
 
 class UserWelcomePrinter(MessagePrinter):
-    """Класс для приветствия пользователя, наследует MessagePrinter."""
     def __init__(self, user_name):
-        super().__init__(f"Добро пожаловать, {user_name}!")
+        super().__init__("Добро пожаловать!")
         self.user_name = user_name
 
 
 class BotFarewellPrinter(MessagePrinter):
-    """Класс для прощания, наследует MessagePrinter."""
     def __init__(self):
         super().__init__("Спасибо за использование бота!")
-
-    def farewell(self):
-        """Выводит прощальное сообщение."""
-        return "До новых встреч!"
 
 
 
@@ -225,7 +216,7 @@ def handle_action_choice(message):
     if message.text == "Ввести еду":
         bot.send_message(
             message.chat.id,
-            "Введите блюдо, которое вы съели (например: 'Классический борщ')."
+            "Введите блюдо, которое вы съели (например: 'Винегрет'). Вся информация по калориями и бжу будет на 100г продукта"
         )
         bot.register_next_step_handler(message, handle_food_query)  # Переход к обработке продукта
 
@@ -258,13 +249,10 @@ def handle_food_query(message):
     )
 
 if __name__ == "__main__":
-    # Пример использования приветственного класса
     user_printer = UserWelcomePrinter('Друг')
-    user_printer.print_message()  # Печатает: Сообщение: Добро пожаловать, Алексей!
+    user_printer.print_message()  
 
-    # Пример использования класса для прощания
     bot_printer = BotFarewellPrinter()
-    bot_printer.print_message()  # Печатает: Сообщение: Спасибо за использование бота!
-    print(bot_printer.farewell())  # Печатает: До новых встреч!
+    bot_printer.print_message()  
 
 bot.polling(non_stop=True)

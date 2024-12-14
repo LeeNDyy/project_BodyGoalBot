@@ -30,15 +30,3 @@ class DishDatabase:
         query = query.strip().lower()
         return self.dishes.get(query, None)
 
-    def add_dish(self, name, calories, protein, fat, carbs):
-        """Добавляет новое блюдо в базу данных."""
-        self.dishes[name.lower()] = {
-            "calories": calories,
-            "protein": protein,
-            "fat": fat,
-            "carbs": carbs
-        }
-        # Добавляем в CSV-файл
-        with open(self.file_path, "a", encoding="utf-8", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow([name, calories, protein, fat, carbs])
